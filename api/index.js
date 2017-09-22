@@ -7,5 +7,8 @@ axios.defaults.baseURL = 'https://api.github.com/repos/';
 module.exports = {
   getRepository(repository) {
     return axios.get(`/${repository}`);
+  },
+  getEvents(repository) {
+    return axios.get(`/${repository}/events`);
   }
 };
