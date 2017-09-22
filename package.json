@@ -1,0 +1,30 @@
+{
+  "name": "contribuye-harvest",
+  "version": "1.0.0",
+  "description": "API to retrieve Github issues",
+  "main": "index.js",
+  "scripts": {
+    "test": "test",
+    "start": "node index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/CodeandoMexico/contribuye-harvest.git"
+  },
+  "keywords": [
+    "API",
+    "Github"
+  ],
+  "author": "sbaidon",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/CodeandoMexico/contribuye-harvest/issues"
+  },
+  "homepage": "https://github.com/CodeandoMexico/contribuye-harvest#readme",
+  "dependencies": {
+    "axios": "^0.16.2",
+    "dotenv": "^4.0.0",
+    "socket.io": "^2.0.3"
+  },
+  "false": {}
+}
