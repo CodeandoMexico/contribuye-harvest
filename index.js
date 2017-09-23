@@ -35,4 +35,4 @@ const io = require('socket.io')(server, {
     'polling'
   ]
 });
-io.on('connection', connectionController.connect);
+io.on('connection', socket => connectionController.connect(socket,io));
