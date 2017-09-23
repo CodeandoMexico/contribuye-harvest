@@ -16,7 +16,7 @@ let getRepositories = Promise.all(promises)
 
 exports.connect = (socket,io) => {
   ioNeeded.resolve(io);
-  emitRepositories(getRepositories,io);
+  emitRepositories(getRepositories,socket);
 };
 
 const repositoriesInterval = (responses,io) => {
@@ -32,7 +32,7 @@ const repositoriesInterval = (responses,io) => {
 
 const emitResponse = (responses,io) => {
   let allResponses = responses.map(data => fetchRepository(io,data));
-  return emitRepositories(Promise.all(allResponses))
+  return emitRepositories(Promise.all(allResponses),io.sockets)
 }
 
 const fetchRepository = (data) => {
@@ -41,9 +41,9 @@ const fetchRepository = (data) => {
   return api.getEvents(name);
 };
 
-const emitRepositories = (repositoriesPromise ,io) => {
+const emitRepositories = (repositoriesPromise ,socket) => {
   repositoriesPromise.then(repos=>{
-    io.sockets.emit('repositories',repos);
+    socket.emit('repositories',repos);
     return repos;
   });
 };
