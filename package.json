@@ -23,8 +23,14 @@
   "homepage": "https://github.com/CodeandoMexico/contribuye-harvest#readme",
   "dependencies": {
     "axios": "^0.16.2",
+    "body-parser": "^1.18.2",
+    "cors": "^2.8.4",
     "dotenv": "^4.0.0",
+    "express": "^4.15.4",
     "socket.io": "^2.0.3"
+  },
+  "now": {
+    "dotenv": "variables.env.now"
   },
   "false": {}
 }

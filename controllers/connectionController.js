@@ -23,7 +23,7 @@ const subscribeToRepository = (socket, repository) => {
       console.log(data);
       socket.emit(`events/${name}`, data);
     });
-  }, 10000);
+  }, 30000);
 };
 
 const unsubscribeToRepository = (socket, { full_name: name }) => {
