@@ -7,8 +7,9 @@ exports.connect = socket => {
   Promise.all(promises)
     .then(response =>
       response.forEach(({ data }) => {
-        socket.emit('repository', data);
+        socket.emit('repositoryRetrieved', data);
         socket.on('unsubscribeRepository', unsubscribeToRepository);
+        socket.on('subscribeRepository', subscribeToRepository);
         subscribeToRepository(socket, data);
       })
     )

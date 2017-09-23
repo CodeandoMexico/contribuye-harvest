@@ -9,7 +9,7 @@ module.exports = {
     return axios.get(`/${repository}`);
   },
   getEvents(repository) {
-    return axios.get(`/${repository}/events`);
+    return axios.get(`/${repository}/issues/events`);
   },
   createWebHook(
     repository,
