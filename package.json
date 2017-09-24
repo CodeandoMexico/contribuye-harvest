@@ -32,5 +32,8 @@
   "now": {
     "dotenv": "variables.env.now"
   },
+  "engines": {
+    "node": "6.11.1"
+  },
   "false": {}
 }
