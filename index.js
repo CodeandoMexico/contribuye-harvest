@@ -11,7 +11,7 @@ const app = express();
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
-app.use(cors({ origin: '*' }));
+app.use(cors());
 
 app.post('/webhook', (req, res) => {
   console.log(req.payload);
@@ -23,16 +23,5 @@ const server = app.listen(app.get('port'), () => {
   console.log(`Express running → PORT ${server.address().port}`);
 });
 
-const io = require('socket.io')(server, {
-  log: false,
-  agent: false,
-  origins: '*:*',
-  transports: [
-    'websocket',
-    'htmlfile',
-    'xhr-polling',
-    'jsonp-polling',
-    'polling'
-  ]
-});
-io.on('connection', socket => connectionController.connect(socket,io));
+const io = require('socket.io')(server);
+io.on('connection', socket => connectionController.connect(socket, io));
