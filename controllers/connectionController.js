@@ -24,7 +24,6 @@ const transformIssues = (issues, repositories) => {
     const repository = repositories.find(
       repository => repository.url === issue.repository_url
     );
-    console.log(issue.repository_url);
     return mapIssue(issue, repository);
   });
 };
