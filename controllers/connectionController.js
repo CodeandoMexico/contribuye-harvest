@@ -12,6 +12,7 @@ const mapIssue = (issue, repository) => ({
   comments: issue.comments,
   createdAt: issue.created_at,
   updatedAt: issue.updated_at,
+  repository_url: issue.repository_url,
   repository,
   labels: issue.labels.map(label => ({
     name: label.name,
@@ -23,6 +24,7 @@ const transformIssues = (issues, repositories) => {
     const repository = repositories.find(
       repository => repository.url === issue.repository_url
     );
+    console.log(issue.repository_url);
     return mapIssue(issue, repository);
   });
 };
@@ -57,7 +59,8 @@ exports.connect = async (socket, io) => {
 const issuesInterval = (sockets, repositories) => {
   setInterval(() => {
     Promise.all(issuesPromises).then(responses => {
-      const issues = mapData(responses);
+      let issues = mapData(responses);
+      issues = issues.reduce((prev, curr) => [...prev, ...curr]);
       emitIssues(
         transformIssues(issues, transformRepositories(repositories)),
         sockets
