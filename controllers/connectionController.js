@@ -18,16 +18,15 @@ const mapIssue = (issue, repository) => ({
     color: label.color
   }))
 });
-const transformIssues = (repoIssues, repositories) => {
-  return repoIssues.map(issues => {
-    return issues.map(({ issue }) => {
-      const repository = repositories.find(
-        repository => repository.url === issue.repository_url
-      );
-      return mapIssue(issue, repository);
-    });
+const transformIssues = (issues, repositories) => {
+  return issues.map(({ issue }) => {
+    const repository = repositories.find(
+      repository => repository.url === issue.repository_url
+    );
+    return mapIssue(issue, repository);
   });
 };
+
 const transformRepositories = repositories => {
   return repositories.map(repository => ({
     name: repository.name,
@@ -40,9 +39,10 @@ exports.connect = async (socket, io) => {
   let repositories = await Promise.all(repositoriesPromises).then(responses =>
     mapData(responses)
   );
-  let issues = await Promise.all(issuesPromises).then(responses =>
-    mapData(responses)
-  );
+  let issues = await Promise.all(issuesPromises);
+  issues = mapData(issues);
+  issues = issues.reduce((prev, curr) => [...prev, ...curr]);
+
   repositories = transformRepositories(repositories);
   issues = transformIssues(issues, repositories);
   emitIssues(issues, socket);
@@ -67,7 +67,7 @@ const issuesInterval = (sockets, repositories) => {
 };
 
 const emitIssues = (issues, socket) => {
-  socket.emit('events', ...issues);
+  socket.emit('events', issues);
 };
 
 const emitRepositories = (repositories, socket) => {
