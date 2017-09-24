@@ -33,7 +33,7 @@
     "dotenv": "variables.env.now"
   },
   "engines": {
-    "node": "6.11.1"
+    "node": "8.1.0"
   },
   "false": {}
 }
