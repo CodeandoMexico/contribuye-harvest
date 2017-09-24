@@ -1,49 +1,75 @@
 const api = require('../api');
 let repositories = require('../repositories');
 
-let ioNeeded = {};
+let firstSocket = true;
 
-let ioPromise = new Promise(resolve => { ioNeeded.resolve = resolve})
-const promises = [...repositories.map(repo => api.getRepository(repo)),ioPromise];
-
-let getRepositories = Promise.all(promises)
-.then(responses => {
-  let io = responses.splice(responses.length -1, 1)[0];
-  return repositoriesInterval(responses,io);
-})
-.catch(err => console.log(err));
-
-
-exports.connect = (socket,io) => {
-  ioNeeded.resolve(io);
-  emitRepositories(getRepositories,socket);
-};
-
-const repositoriesInterval = (responses,io) => {
-  let allData = emitResponse(responses,io);
-  setTimeout(() => {
-    setInterval(() => {
-      allData.then(emitResponse(responses,io));
-    }, 30000);
-  },30000);
-
-  return allData;
-};
-
-const emitResponse = (responses,io) => {
-  let allResponses = responses.map(data => fetchRepository(io,data));
-  return emitRepositories(Promise.all(allResponses),io.sockets)
-}
-
-const fetchRepository = (data) => {
-  const { full_name: name } = data;
-
-  return api.getEvents(name);
-};
-
-const emitRepositories = (repositoriesPromise ,socket) => {
-  repositoriesPromise.then(repos=>{
-    socket.emit('repositories',repos);
-    return repos;
+const repositoriesPromises = repositories.map(repo => api.getRepository(repo));
+const issuesPromises = repositories.map(repo => api.getEvents(repo));
+const mapData = responses => responses.map(response => response.data);
+const mapIssue = (issue, repository) => ({
+  id: issue.id,
+  url: issue.url,
+  comments: issue.comments,
+  createdAt: issue.created_at,
+  updatedAt: issue.updated_at,
+  repository,
+  labels: issue.labels.map(label => ({
+    name: label.name,
+    color: label.color
+  }))
+});
+const transformIssues = (repoIssues, repositories) => {
+  return repoIssues.map(issues => {
+    return issues.map(({ issue }) => {
+      const repository = repositories.find(
+        repository => repository.url === issue.repository_url
+      );
+      return mapIssue(issue, repository);
+    });
   });
+};
+const transformRepositories = repositories => {
+  return repositories.map(repository => ({
+    name: repository.name,
+    url: repository.url,
+    language: repository.language
+  }));
+};
+
+exports.connect = async (socket, io) => {
+  let repositories = await Promise.all(repositoriesPromises).then(responses =>
+    mapData(responses)
+  );
+  let issues = await Promise.all(issuesPromises).then(responses =>
+    mapData(responses)
+  );
+  repositories = transformRepositories(repositories);
+  issues = transformIssues(issues, repositories);
+  emitIssues(issues, socket);
+  emitRepositories(repositories, socket);
+  if (firstSocket) {
+    console.log('FIRST CONNECTION');
+    firstSocket = false;
+    issuesInterval(io.sockets, repositories);
+  }
+};
+
+const issuesInterval = (sockets, repositories) => {
+  setInterval(() => {
+    Promise.all(issuesPromises).then(responses => {
+      const issues = mapData(responses);
+      emitIssues(
+        transformIssues(issues, transformRepositories(repositories)),
+        sockets
+      );
+    });
+  }, 30000);
+};
+
+const emitIssues = (issues, socket) => {
+  socket.emit('events', ...issues);
+};
+
+const emitRepositories = (repositories, socket) => {
+  socket.emit('repositories', repositories);
 };
