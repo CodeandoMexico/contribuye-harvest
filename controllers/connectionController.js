@@ -8,7 +8,9 @@ const issuesPromises = repositories.map(repo => api.getEvents(repo));
 const mapData = responses => responses.map(response => response.data);
 const mapIssue = (issue, repository) => ({
   id: issue.id,
-  url: issue.url,
+  url: issue.html_url,
+  title: issue.title,
+  status: issue.state,
   comments: issue.comments,
   createdAt: issue.created_at,
   updatedAt: issue.updated_at,
@@ -22,7 +24,7 @@ const mapIssue = (issue, repository) => ({
 const transformIssues = (issues, repositories) => {
   return issues.map(({ issue }) => {
     const repository = repositories.find(
-      repository => repository.url === issue.repository_url
+      repository => repository.repository_url === issue.repository_url
     );
     return mapIssue(issue, repository);
   });
@@ -31,7 +33,8 @@ const transformIssues = (issues, repositories) => {
 const transformRepositories = repositories => {
   return repositories.map(repository => ({
     name: repository.name,
-    url: repository.url,
+    repository_url: repository.url,
+    url: repository.html_url,
     language: repository.language
   }));
 };
