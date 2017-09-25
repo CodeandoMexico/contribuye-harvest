@@ -10,6 +10,7 @@ const mapIssue = (issue, repository) => ({
   id: issue.id,
   url: issue.html_url,
   title: issue.title,
+  status: issue.state,
   comments: issue.comments,
   createdAt: issue.created_at,
   updatedAt: issue.updated_at,
