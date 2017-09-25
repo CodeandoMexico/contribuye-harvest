@@ -10,7 +10,6 @@ const mapIssue = (issue, repository) => ({
   id: issue.id,
   url: issue.html_url,
   title: issue.title,
-  status: issue.state,
   comments: issue.comments,
   createdAt: issue.created_at,
   updatedAt: issue.updated_at,
@@ -23,20 +22,19 @@ const mapIssue = (issue, repository) => ({
 });
 const transformIssues = (issues, repositories) => {
   return issues.map(({ issue }) => {
-    const repository = repositories.find(
-      repository => repository.repository_url === issue.repository_url
-    );
-    return mapIssue(issue, repository);
+    const repository = repositories.find(repository => {
+      return repository.url === issue.repository_url;
+    });
+    return mapIssue(issue, transformRepository(repository));
   });
 };
 
-const transformRepositories = repositories => {
-  return repositories.map(repository => ({
+const transformRepository = repository => {
+  return {
     name: repository.name,
-    repository_url: repository.url,
     url: repository.html_url,
     language: repository.language
-  }));
+  };
 };
 
 exports.connect = async (socket, io) => {
@@ -47,7 +45,6 @@ exports.connect = async (socket, io) => {
   issues = mapData(issues);
   issues = issues.reduce((prev, curr) => [...prev, ...curr]);
 
-  repositories = transformRepositories(repositories);
   issues = transformIssues(issues, repositories);
   emitIssues(issues, socket);
   emitRepositories(repositories, socket);
@@ -63,10 +60,7 @@ const issuesInterval = (sockets, repositories) => {
     Promise.all(issuesPromises).then(responses => {
       let issues = mapData(responses);
       issues = issues.reduce((prev, curr) => [...prev, ...curr]);
-      emitIssues(
-        transformIssues(issues, transformRepositories(repositories)),
-        sockets
-      );
+      emitIssues(transformIssues(issues, repositories), sockets);
     });
   }, 30000);
 };
@@ -76,5 +70,6 @@ const emitIssues = (issues, socket) => {
 };
 
 const emitRepositories = (repositories, socket) => {
+  repositories = repositories.map(transformRepository);
   socket.emit('repositories', repositories);
 };
